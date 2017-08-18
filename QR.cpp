@@ -903,13 +903,13 @@ void QR::finder_pattern(int x, int y)
         1, 1, 1, 1, 1, 1, 1
     };
 
-	for (int i = 0; i < FINDER_PATTERN_SIZE; i++)
-	{
-		for (int j = 0; j < FINDER_PATTERN_SIZE; j++)
-		{
+    for (int i = 0; i < FINDER_PATTERN_SIZE; i++)
+    {
+        for (int j = 0; j < FINDER_PATTERN_SIZE; j++)
+        {
             QR_DATA[(x + i)*SIZE + (y + j)] = pattern[i][j] + MODULE_FUNCION_PATTERN;
-		}
-	}
+        }
+    }
 }
 
 void QR::separator()
@@ -981,35 +981,35 @@ void QR::format_info(int data_mask)
     int format;
 
     switch (EC_LEVEL)
-	{
-	case LEVEL_M:
-		format = 0x00;
-		break;
+    {
+    case LEVEL_M:
+        format = 0x00;
+    break;
 
-	case LEVEL_L:
-		format = 0x08;
-		break;
+    case LEVEL_L:
+        format = 0x08;
+    break;
 
-	case LEVEL_Q:
-		format = 0x18;
-		break;
+    case LEVEL_Q:
+        format = 0x18;
+    break;
 
-	default:
-		format = 0x10;
-		break;
-	}
+    default:
+        format = 0x10;
+    break;
+    }
 
     format += data_mask;
     int coefficient = (format << 10);
 
     for (int i = 0; i < 5; i++)
-	{
-		if (coefficient & (1 << (14 - i)))
-		{
+    {
+        if (coefficient & (1 << (14 - i)))
+        {
             /* Generator polynomial G(x) = x^10+x^8+x^5+x^4+x^2+x+1. 10100110111 (0x0537) */
-			coefficient ^= (0x0537 << (4 - i));
-		}
-	}
+            coefficient ^= (0x0537 << (4 - i));
+        }
+    }
     format = (format << 10) + coefficient;
     format ^= 0x5412; /* masking shall be applied by XORing the bit string with 101010000010010 (0x5412) */
 
@@ -1046,24 +1046,24 @@ void QR::version_info()
 
     int ver_data = (VERSION << 12);
 
-	for (int i = 0; i < 6; i++)
-	{
-		if (ver_data & (1 << (17 - i)))
-		{
+    for (int i = 0; i < 6; i++)
+    {
+        if (ver_data & (1 << (17 - i)))
+        {
             /* Generator polynomial G(x) = x^12+x^11+x^10+x^9+x^8+x^5+x^2+1. 1111100100101 (0x1F25) */
-			ver_data ^= (0x1F25 << (5 - i));
-		}
-	}
-	ver_data += (VERSION << 12);
+            ver_data ^= (0x1F25 << (5 - i));
+        }
+    }
+    ver_data += (VERSION << 12);
 
-	for (int i = 0; i < 6; i++)
-	{
-		for (int j = 0; j < 3; j++)
-		{
-			QR_DATA[i*SIZE + (SIZE - 11 + j)] = ((ver_data >> (i*3 + j)) & 0x01) + MODULE_FUNCION_PATTERN;
+    for (int i = 0; i < 6; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            QR_DATA[i*SIZE + (SIZE - 11 + j)] = ((ver_data >> (i*3 + j)) & 0x01) + MODULE_FUNCION_PATTERN;
             QR_DATA[(SIZE - 11 + j)*SIZE + i] = ((ver_data >> (i*3 + j)) & 0x01) + MODULE_FUNCION_PATTERN;
-		}
-	}
+        }
+    }
 }
 
 void QR::data_pattern(string qr_str)
