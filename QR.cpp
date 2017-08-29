@@ -843,7 +843,7 @@ string Reed_Solomon(string block_str, int data_bytes, int rs_bytes)
             {
                 int ele = GP_LIST[rs_bytes][j] + first;
                 ele = ele % 255;
-                rs[j] = rs[j+1] ^ GF_INT[ele];
+                rs[j] = rs[j + 1] ^ GF_INT[ele];
             }
 
             for (int j = rs_bytes; j < data_bytes + rs_bytes - 1; j++)
@@ -890,6 +890,8 @@ string error_correction(string qr_str, int version, int ec_level)
     return ret;
 }
 
+/* Three Finder Patterns located at the upper left, upper right and lower left corners
+ * Each constructed of dark 7 × 7 modules, light 5 × 5 modules and dark 3 × 3 modules */
 void QR::finder_pattern(int x, int y)
 {
     static unsigned char pattern[][FINDER_PATTERN_SIZE] =
@@ -912,13 +914,15 @@ void QR::finder_pattern(int x, int y)
     }
 }
 
+/* A one-module wide separator, constructed of all light modules
+ * is placed between each finder pattern and the Encoding Region */
 void QR::separator()
 {
     for (int i = 0; i < 8; i++)
     {
         QR_DATA[7*SIZE + i] = 0 + MODULE_FUNCION_PATTERN;
         QR_DATA[7*SIZE + SIZE - 8 + i] = 0 + MODULE_FUNCION_PATTERN;
-        QR_DATA[(SIZE-8)*SIZE + i] = 0 + MODULE_FUNCION_PATTERN;
+        QR_DATA[(SIZE - 8)*SIZE + i] = 0 + MODULE_FUNCION_PATTERN;
 
         QR_DATA[i*SIZE + 7] = 0 + MODULE_FUNCION_PATTERN;
         QR_DATA[(SIZE - 8 + i)*SIZE + 7] = 0 + MODULE_FUNCION_PATTERN;
@@ -926,14 +930,18 @@ void QR::separator()
     }
 }
 
+/* The horizontal and vertical timing patterns respectively consist of a one module wide row or column of
+ * alternating dark and light modules, commencing and ending with a dark module */
 void QR::timing_pattern()
 {
     for (int i = FINDER_PATTERN_SIZE + 1; i < SIZE - FINDER_PATTERN_SIZE - 1; i++)
     {
-        QR_DATA[6*SIZE + i] = QR_DATA[i*SIZE + 6] = ((i + 1)%2) + MODULE_FUNCION_PATTERN;
+        QR_DATA[6*SIZE + i] = QR_DATA[i*SIZE + 6] = ((i + 1) % 2) + MODULE_FUNCION_PATTERN;
     }
 }
 
+/* Alignment patterns are present only in QR Code symbols of version 2 or larger
+ * Each constructed of dark 5 × 5 modules, light 3 × 3 modules and a single central dark module */
 void QR::align_pattern()
 {
     static unsigned char pattern[][ALIGN_PATTERN_SIZE] =
@@ -1066,6 +1074,9 @@ void QR::version_info()
     }
 }
 
+/* Symbol characters are positioned in two-module wide columns
+ * commencing at the lower right corner of the symbol
+ * and running alternately upwards and downwards from the right to the left */
 void QR::data_pattern(string qr_str)
 {
     int x = SIZE - 1;
@@ -1097,6 +1108,7 @@ void QR::data_pattern(string qr_str)
                 y--;
                 if (y == 6)
                 {
+                    /* Skip the vertical timing pattern */
                     y = 5;
                 }
                 upwards = false;
@@ -1373,6 +1385,9 @@ void QR::data_mask_pattern(int data_mask)
     }
 }
 
+/* Divide the data sequence into blocks as defined according to the version and error correction level
+ * For each data block, calculate a corresponding block of error correction codewords
+ * Assemble the final sequence by taking data and error correction codewords from each block in turn */
 string QR::construct_data(string qr_str, string ec_str)
 {
     string ret = "";
